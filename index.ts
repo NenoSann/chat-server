@@ -1,15 +1,11 @@
-import express, { Express, Request, Response } from "express";
-import { handleConnection } from "./ws";
-import { WebSocketServer } from "ws";
-const app: Express = express();
-const wss = new WebSocketServer({ port: 8081 });
-const port: number = 3000;
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Express + typescript!')
-})
+import express from "express";
+import { router } from './httpServer';
+import { createSocket } from "./Socket.io/socket";
+import { createServer } from "http";
+const app = express();
+const httpServer = createServer(app);
+const io = createSocket(httpServer);
+app.use('/', router);
 
-app.listen(port, () => {
-    console.log(`listening on port ${port}`);
-    wss.on('connection', handleConnection);
-});
+httpServer.listen(8080);
