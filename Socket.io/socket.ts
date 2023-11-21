@@ -36,6 +36,9 @@ const createSocket = function (HttpServer: HttpServer): Server {
         ServerToClientEvents,
         InterServerEvents,
         SocketData>(HttpServer, {
+            cors: {
+                origin: '*',
+            }
         });
     // event listeners here, import events only
     io.on('connection', (Socket) => {
