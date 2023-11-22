@@ -4,6 +4,7 @@ import { IMessage, messageSchema } from "../message";
 
 interface IUser {
     name: string,
+    password: string,
     email: string,
     _id: Schema.Types.ObjectId,
     avatar?: string,
@@ -14,6 +15,10 @@ interface IUser {
 
 const userSchema: Schema<IUser> = new Schema<IUser>({
     name: {
+        type: String,
+        required: true
+    },
+    password: {
         type: String,
         required: true
     },
