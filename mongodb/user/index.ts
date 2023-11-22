@@ -38,10 +38,14 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     }],
     chats: {
         type: Map,
-        of: messageSchema
+        of: [messageSchema],
     }
 })
 
 const User = mongoose.model('User', userSchema);
 
+userSchema.methods.getAllMessagesWithUser = function getAllMessagesWithUser(otherUserID: string) {
+    const map: Map<string, IMessage> = this.chats;
+    return map.get(otherUserID);
+}
 export { User, userSchema, IUser }

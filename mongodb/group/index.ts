@@ -11,7 +11,10 @@ const groupSchema: Schema<IGroup> = new Schema<IGroup>({
         type: String,
         required: true
     },
-    members: [userSchema],
+    members: {
+        type: [userSchema],
+        default: []
+    },
 })
 
 const Group = mongoose.model<IGroup>('Group', groupSchema);
