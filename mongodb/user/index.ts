@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { IGroup, groupSchema } from "../group";
 import { IMessage, messageSchema } from "../message";
+import { error } from "console";
 
 interface IUser {
     name: string,
@@ -26,10 +27,6 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
         type: String,
         required: true,
     },
-    _id: {
-        type: Schema.Types.ObjectId,
-        required: true
-    },
     avatar: {
         type: String
     },
@@ -53,4 +50,6 @@ userSchema.methods.getAllMessagesWithUser = function getAllMessagesWithUser(othe
     const map: Map<string, IMessage> = this.chats;
     return map.get(otherUserID);
 }
+
+
 export { User, userSchema, IUser }
