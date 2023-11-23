@@ -28,7 +28,8 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
         required: true,
     },
     avatar: {
-        type: String
+        type: String,
+        default: 'default'
     },
     groups: {
         type: [groupSchema],
