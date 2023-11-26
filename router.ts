@@ -27,8 +27,9 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 })
 
-router.get('/login', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
     try {
+        console.log(req.body);
         const { email, password } = req.body;
         const user = await getUser(email, password);
         res.status(200).json({

@@ -1,4 +1,3 @@
-import { error } from "console";
 import { User, IUser } from "../../mongodb/user";
 import { IGroup } from "../../mongodb/group";
 
