@@ -21,6 +21,7 @@ const createGroup = async function (groupName: string, founderId: string) {
                 });
                 await newGroup.save();
                 founder.groups.push(newGroup.id);
+                await founder.save();
                 resolve(newGroup);
             }
         } catch (error) {

@@ -9,11 +9,19 @@ interface ServerToClientEvents {
     withAck: (d: string, callback: (e: number) => void) => void;
     hello: (d: string, callback: (e: string) => void) => void;
     message: (d: string, Response: ServerResponse, callback: (e: string) => void) => void;
+    users: (d: string) => void;
+    user_connected: (d: {
+        userid: string,
+        username: string,
+        avatar: string
+    }) => void;
+    private_message: (d: { content: string, from: string }) => void
 }
 
 interface ClientToServerEvents {
     hello: (d: string) => void;
     message: (d: string, Response: ServerResponse) => void;
+    private_message: (d: { content: string, to: string }) => void
 }
 
 interface InterServerEvents {
@@ -21,9 +29,15 @@ interface InterServerEvents {
 }
 
 interface SocketData {
-    name: string;
-    age: number;
+    userid: string,
+    avatar: string,
+    username: string,
 }
+
+const userMap = new Map<string, {
+    avatar: string,
+    username: string
+}>();
 
 /**
  * @description passin HttpServer, return the socket server
@@ -40,11 +54,42 @@ const createSocket = function (HttpServer: HttpServer): Server {
                 origin: '*',
             }
         });
+    //use middle ware
+    io.use((socket, next) => {
+        const username = socket.handshake.auth.username;
+        if (!username) {
+            throw new Error('invalid username');
+        }
+        // add username property for socket
+        (socket as any).username = username;
+        next();
+    })
     // event listeners here, import events only
     io.on('connection', (Socket) => {
-        Socket.on('hello', (d) => {
-            console.log(`hello message ${d}`);
+        // send all active user to Socket
+        userMap.set(Socket.data.userid,
+            {
+                avatar: Socket.data.avatar,
+                username: Socket.data.username
+            });
+        Socket.emit('users', JSON.stringify(Array.from(userMap)));
+
+        // tell rest sockets new user connected
+        Socket.broadcast.emit('user_connected', {
+            userid: Socket.data.userid,
+            avatar: Socket.data.avatar,
+            username: Socket.data.username
         })
+
+        // handle the private message and redirect it to right recipient
+        Socket.on('private_message', (data: { content: string, to: string }) => {
+            const { content, to } = data;
+            Socket.to(to).emit('private_message', {
+                content,
+                from: Socket.id
+            })
+        })
+
         Socket.on('message', (data) => {
             receiveMessage(Socket, data);
         })
