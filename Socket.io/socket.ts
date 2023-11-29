@@ -58,11 +58,12 @@ const createSocket = function (HttpServer: HttpServer): Server {
     io.use((socket, next) => {
         const username = socket.handshake.auth.username;
         if (!username) {
-            throw new Error('invalid username');
+            console.log('invalid username');
+        } else {
+            // add username property for socket
+            (socket as any).username = username;
+            next();
         }
-        // add username property for socket
-        (socket as any).username = username;
-        next();
     })
     // event listeners here, import events only
     io.on('connection', (Socket) => {
