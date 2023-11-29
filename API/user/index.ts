@@ -1,5 +1,5 @@
 import { User, IUser } from "../../mongodb/user";
-import { IGroup } from "../../mongodb/group";
+import bcrypt from 'bcrypt'
 
 /**
  * @NenoSann
@@ -10,10 +10,13 @@ import { IGroup } from "../../mongodb/group";
 const registerUser = function (name: string, email: string, password: string): Promise<IUser | Error> {
     return new Promise<IUser>(async (resolve, reject) => {
         if (name && email && password) {
+            console.log(email, password)
+            const hashedPassword = await bcrypt.hash(password, 8);
+            console.log('hashedPassword: ', hashedPassword);
             const user = new User({
                 name,
                 email,
-                password
+                password: hashedPassword
             });
             user.save()
                 .then((savedUser) => resolve(savedUser))
@@ -34,11 +37,15 @@ const getUser = async function (email: string, password: string): Promise<IUser>
             console.log(email, password)
             const user = await User.findOne({ email: email }).exec();
             console.log(user);
+            let passwordValid = false;
+            if (user !== null) {
+                passwordValid = await bcrypt.compare(password, user?.password as string);
+            }
             if (user === null) {
                 const error = new Error('User not found');
                 (error as any).statusCode = 404;
                 reject(error);
-            } else if (user?.password !== password) {
+            } else if (!passwordValid) {
                 const error = new Error('Wrong password');
                 (error as any).statusCode = 401; // Custom property indicating the status code
                 reject(error);

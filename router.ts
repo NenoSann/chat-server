@@ -1,7 +1,7 @@
 import express from 'express'
 import { Request, Response } from 'express';
 import { registerUser, getUser } from './API/user';
-import { IUser } from './mongodb/user';
+import { createGroup } from './API/group';
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -45,4 +45,37 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 })
 
+router.post('/test/:count', async (req, res) => {
+    try {
+        const count = parseInt(req.params.count);
+        console.log(count);
+        for (let i = count; i < count + 10; i++) {
+            const user = await registerUser(`NenoSan${i}`, `NenoSan${i}@gmail.com`, '2440060505');
+            console.log(user);
+        }
+        res.status(200).send('成功获取参数');
+    } catch (error) {
+        // 错误处理
+        res.status(500).send('服务器错误');
+    }
+});
+
+router.post('/createGroup', async (req: Request, res: Response) => {
+    try {
+        const { groupName, founderId } = req.body;
+        if (groupName && founderId) {
+            const group = await createGroup(groupName, founderId);
+            res.status(200).send({
+                status: 'suceess',
+                message: 'create group success',
+                data: group
+            })
+        }
+    } catch (error) {
+        res.status(500).send({
+            status: 'fail',
+            message: 'create group fail'
+        })
+    }
+})
 export { router };

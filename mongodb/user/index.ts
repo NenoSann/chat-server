@@ -9,8 +9,8 @@ interface IUser {
     email: string,
     _id: Schema.Types.ObjectId,
     avatar?: string,
-    groups: IGroup[],
-    friends: IUser[],
+    groups: Schema.Types.ObjectId[],
+    friends: Schema.Types.ObjectId[],
     chats: Map<string, IMessage[]>
 }
 
@@ -32,8 +32,9 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
         default: 'default'
     },
     groups: {
-        type: [groupSchema],
-        default: []
+        type: [Schema.Types.ObjectId],
+        ref: 'Group',
+        default: [],
     },
     friends: [{
         type: Schema.Types.ObjectId,

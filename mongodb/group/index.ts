@@ -3,7 +3,7 @@ import { IUser, userSchema } from "../user"
 
 interface IGroup {
     groupName: string,
-    members: IUser[],
+    members: Schema.Types.ObjectId[],
 }
 
 const groupSchema: Schema<IGroup> = new Schema<IGroup>({
@@ -12,7 +12,8 @@ const groupSchema: Schema<IGroup> = new Schema<IGroup>({
         required: true
     },
     members: {
-        type: [userSchema],
+        type: [Schema.Types.ObjectId],
+        ref: 'User',
         default: []
     },
 })
