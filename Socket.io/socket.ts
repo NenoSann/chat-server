@@ -18,14 +18,14 @@ interface ServerToClientEvents {
             socketid: string
         }
     }) => void;
-    private_message: (d: { content: string, from: string }) => void,
+    private_message: (d: { content: string, from: string, senderid: string, sendername: string, senderavatar: string }) => void,
     user_disconnect: (key: string) => void
 }
 
 interface ClientToServerEvents {
     hello: (d: string) => void;
     message: (d: string, Response: ServerResponse) => void;
-    private_message: (d: { content: string, to: string }) => void
+    private_message: (d: { content: string, to: string, senderid: string, sendername: string, senderavatar: string }) => void
 }
 
 interface InterServerEvents {
@@ -88,14 +88,16 @@ const createSocket = function (HttpServer: HttpServer): Server {
             userid: Socket.handshake.headers['x-id'] as string,
             userInfo
         })
-
         // handle the private message and redirect it to right recipient
-        Socket.on('private_message', (data: { content: string, to: string }) => {
-            const { content, to } = data;
+        Socket.on('private_message', (data: { content: string, to: string, senderid: string, sendername: string, senderavatar: string }) => {
+            const { content, to, senderid, senderavatar, sendername } = data;
             console.log('get private message', { content, to });
             Socket.to(to).emit('private_message', {
                 content,
-                from: Socket.id
+                from: Socket.id,
+                senderid,
+                sendername,
+                senderavatar,
             })
         })
 
@@ -105,7 +107,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
 
         Socket.on('disconnect', () => {
             console.log('socket disconnect');
-            const userid = Socket.handshake.auth['x-id'];
+            const userid = Socket.handshake.headers['x-id'] as string;
             userMap.delete(userid)
             Socket.broadcast.emit('user_disconnect', userid);
         })
