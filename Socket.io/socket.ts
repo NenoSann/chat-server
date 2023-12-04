@@ -15,7 +15,8 @@ interface ServerToClientEvents {
         userInfo: {
             username: string,
             avatar: string,
-            socketid: string
+            socketid: string,
+            userid: string
         }
     }) => void;
     private_message: (d: { content: string, from: string, senderid: string, sendername: string, senderavatar: string }) => void,
@@ -41,7 +42,8 @@ interface SocketData {
 const userMap = new Map<string, {
     avatar: string,
     username: string,
-    socketid: string
+    socketid: string,
+    userid: string
 }>();
 
 /**
@@ -76,7 +78,8 @@ const createSocket = function (HttpServer: HttpServer): Server {
         const userInfo = {
             avatar: Socket.handshake.headers['x-avatar'] as string,
             username: Socket.handshake.headers['x-username'] as string,
-            socketid: Socket.id
+            socketid: Socket.id,
+            userid: Socket.handshake.headers['x-id'] as string,
         }
         console.log('user connect', userInfo);
         // send all active user to Socket
