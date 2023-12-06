@@ -9,6 +9,12 @@ const connectToMongo = async function (url: string) {
     })
 }
 
+const disconnectMongodb = async function () {
+    mongoose.disconnect().then(() => {
+        console.log('disconnect mongodb gracefully')
+    }).catch(() => {
+        console.error('error when disconnect mongodb');
+    })
+}
 
-
-export { connectToMongo }
+export { connectToMongo, disconnectMongodb }

@@ -13,18 +13,19 @@ import { userInfo } from "os";
  * 
  */
 const createGroup = async function (groupName: string, founderId: string) {
-    return new Promise<IGroup>(async (resolve, reject) => {
+    return new Promise<IGroup | boolean>(async (resolve, reject) => {
         try {
             const founder = await User.findById(founderId);
             if (founder !== null) {
                 const newGroup = new Group({
                     groupName,
-                    members: [founder.id]
+                    members: [founder.id],
+                    founder: founder._id
                 });
                 await newGroup.save();
                 founder.groups.push(newGroup.id);
                 await founder.save();
-                resolve(newGroup);
+                resolve(true);
             }
         } catch (error) {
             console.error(error);
@@ -56,5 +57,32 @@ const addUserToGroup = async function (groupId: string | ObjectId, userid: strin
     })
 }
 
+const disbandGroup = async function (groupid: string | ObjectId, userid: string | ObjectId) {
+    return new Promise<Boolean>(async (resolve, reject) => {
+        try {
+            const group = await Group.findById(groupid);
+            const user = await User.findById(userid);
+            if (group !== null && user !== null && group.founder === groupid) {
+                for (let userid of group.members) {
+                    const member = await User.findById(userid);
+                    if (member?.friends.indexOf(groupid as ObjectId) !== -1) {
+                        member?.groups.splice(member?.groups.indexOf(groupid as ObjectId), 1);
+                    }
+                    await member?.save();
+                }
+            }
+            await group?.deleteOne();
+            await group?.save();
+            resolve(true);
+        } catch (error) {
+            reject({
+                status: 'fail',
+                message: 'fail to disband group'
+            })
+        }
+    })
+}
 
-export { createGroup, addUserToGroup }
+
+
+export { createGroup, addUserToGroup, disbandGroup }
