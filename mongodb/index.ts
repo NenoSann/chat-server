@@ -10,10 +10,12 @@ const connectToMongo = async function (url: string) {
 }
 
 const disconnectMongodb = async function () {
-    mongoose.disconnect().then(() => {
-        console.log('disconnect mongodb gracefully')
-    }).catch(() => {
-        console.error('error when disconnect mongodb');
+    return new Promise<void>(async (resolve, reject) => {
+        mongoose.disconnect().then(() => {
+            resolve();
+        }).catch(() => {
+            reject();
+        })
     })
 }
 
