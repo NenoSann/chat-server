@@ -1,8 +1,10 @@
 /**
  * This file handles all CRUD about Group document
  */
+import { ObjectId } from "mongoose";
 import { Group, IGroup } from "../../mongodb/group";
 import { User } from "../../mongodb/user";
+import { userInfo } from "os";
 
 /**
  * @description create a group that only caontains the founder
@@ -30,4 +32,29 @@ const createGroup = async function (groupName: string, founderId: string) {
         }
     })
 }
-export { createGroup }
+
+const addUserToGroup = async function (groupId: string | ObjectId, userid: string | ObjectId) {
+    return new Promise<IGroup>(async (resolve, reject) => {
+        try {
+            const group = await Group.findById(groupId);
+            if (group !== null && await User.findById(userid) !== null) {
+                group.members.push(userid as ObjectId);
+                await group.save();
+                resolve(group);
+            } else {
+                reject({
+                    status: 'fail',
+                    message: 'gourp not exist or userid not exist'
+                })
+            }
+        } catch (error) {
+            reject({
+                status: 'fail',
+                message: 'fail to join group'
+            })
+        }
+    })
+}
+
+
+export { createGroup, addUserToGroup }

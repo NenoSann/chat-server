@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import { User, IUser } from "../../mongodb/user";
 import bcrypt from 'bcrypt'
 
@@ -59,4 +60,62 @@ const getUser = async function (email: string, password: string): Promise<IUser>
         }
     })
 }
-export { registerUser, getUser }
+
+const addFriends = async function (userId: string, targetUserId: string): Promise<Boolean> {
+    return new Promise<Boolean>(async (resolve, reject) => {
+        try {
+            const user = await User.findById(userId);
+            if (user === null) {
+                reject({
+                    status: 'fail',
+                    message: 'cannot find user'
+                });
+            }
+            const targetUser = await User.findById(targetUserId);
+            if (targetUser === null) {
+                reject({
+                    status: 'fail',
+                    message: 'cannot find target user'
+                });
+            }
+            user!.friends.push(targetUserId as any as ObjectId);
+            await user!.save();
+            resolve(true);
+        } catch (error) {
+            reject({
+                status: 'fail',
+                message: 'fail at add friends'
+            })
+        }
+    })
+}
+
+const deleteFriends = async function (userid: string | ObjectId, targetUserId: string | ObjectId): Promise<Boolean> {
+    return new Promise<Boolean>(async (resolve, reject) => {
+        try {
+            const user = await User.findById(userid);
+            if (user === null) {
+                reject({
+                    status: 'fail',
+                    message: 'cannot find the user'
+                })
+            } else if (user.friends.includes(targetUserId as ObjectId)) {
+                // delete the targetuserid from user's friends list
+                user.friends.splice(user.friends.indexOf(targetUserId as ObjectId), 1);
+                await user.save();
+                resolve(true);
+            } else {
+                reject({
+                    status: 'fail',
+                    message: 'targetUser not in user\'s friend list'
+                })
+            }
+        } catch (error) {
+            reject({
+                status: 'fail',
+                message: 'fail to deleteFriends'
+            })
+        }
+    })
+}
+export { registerUser, getUser, addFriends, deleteFriends }
