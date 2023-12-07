@@ -14,6 +14,13 @@ interface IUser {
     chats: Map<string | ObjectId, IMessage[]>
 }
 
+interface IFriend {
+    name: string,
+    userid: string | ObjectId,
+    avatar: string,
+    status: 'online' | 'offline'
+}
+
 const userSchema: Schema<IUser> = new Schema<IUser>({
     name: {
         type: String,
@@ -56,4 +63,4 @@ userSchema.methods.getAllMessagesWithUser = function getAllMessagesWithUser(othe
 }
 
 
-export { User, userSchema, IUser }
+export { User, userSchema, IUser, IFriend }

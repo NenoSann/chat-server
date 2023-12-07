@@ -62,9 +62,10 @@ const queryMessage = async function (href: string | URL, userid: string | Object
                 if (limit >= total) {
                     // if item's total is lower than the limit
                     resolve({
+                        status: 'success',
                         ...response,
                         items: messages,
-                        previous: null
+                        previous: null,
                     })
                 } else {
                     const startIndex = (offset - 1) * limit;
@@ -72,7 +73,8 @@ const queryMessage = async function (href: string | URL, userid: string | Object
                     const slicedMessages = messages.slice(startIndex, endIndex);
                     resolve({
                         ...response,
-                        items: slicedMessages
+                        items: slicedMessages,
+                        status: 'success'
                     })
                 }
             }

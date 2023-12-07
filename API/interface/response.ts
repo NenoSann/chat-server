@@ -1,4 +1,10 @@
-interface ResponseWithOffset {
+import { IUser } from "../../mongodb/user"
+
+interface BaseResponse {
+    status: 'success' | 'client_fail' | 'server_fail',
+    message?: string
+}
+interface ResponseWithOffset extends BaseResponse {
     href?: string | URL
     offset: number,
     limit: number,
@@ -7,8 +13,13 @@ interface ResponseWithOffset {
     total: number,
 }
 
+
+interface FriendsResponse extends BaseResponse {
+    items: string[],
+    total: number
+}
 interface ItemsResponse<ObjectType> extends ResponseWithOffset {
     items: ObjectType[]
 }
 
-export { ItemsResponse, ResponseWithOffset }
+export { ItemsResponse, ResponseWithOffset, FriendsResponse, BaseResponse }

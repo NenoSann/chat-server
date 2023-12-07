@@ -1,7 +1,8 @@
 import express from 'express'
 import { Request, Response } from 'express';
-import { registerUser, getUser } from './API/user';
+import { registerUser, getUser, addFriends, deleteFriends } from './API/user';
 import { createGroup } from './API/group';
+import { BaseResponse } from './API/interface/response';
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -76,6 +77,38 @@ router.post('/createGroup', async (req: Request, res: Response) => {
             status: 'fail',
             message: 'create group fail'
         })
+    }
+})
+
+router.post('/addFriend', async (req: Request, res: Response) => {
+    try {
+        const { userId, targetUserId } = req.query;
+        await addFriends(userId as string, targetUserId as string);
+        const response: BaseResponse = {
+            status: 'success',
+            message: 'add friend success'
+        }
+        res.status(200).json(response);
+    } catch (error) {
+        let status: number = 400;
+        if ((error as BaseResponse).status === 'client_fail') {
+            status = 400;
+        } else if ((error as BaseResponse).status === 'server_fail') {
+            status = 500;
+        }
+        const response: BaseResponse = {
+            status: (error as BaseResponse).status,
+            message: (error as BaseResponse).message
+        }
+        res.status(status).json(response);
+    }
+})
+
+router.get('/friend', async (req: Request, res: Response) => {
+    try {
+
+    } catch (error) {
+
     }
 })
 export { router };

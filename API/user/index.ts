@@ -1,5 +1,6 @@
 import { ObjectId } from "mongoose";
 import { User, IUser } from "../../mongodb/user";
+
 import bcrypt from 'bcrypt'
 
 /**
@@ -61,29 +62,37 @@ const getUser = async function (email: string, password: string): Promise<IUser>
     })
 }
 
-const addFriends = async function (userId: string, targetUserId: string): Promise<Boolean> {
+const addFriends = async function (userId: string | ObjectId, targetUserId: string | ObjectId) {
     return new Promise<Boolean>(async (resolve, reject) => {
         try {
             const user = await User.findById(userId);
             if (user === null) {
                 reject({
-                    status: 'fail',
+                    status: 'client_fail',
                     message: 'cannot find user'
                 });
             }
             const targetUser = await User.findById(targetUserId);
             if (targetUser === null) {
                 reject({
-                    status: 'fail',
+                    status: 'client_fail',
                     message: 'cannot find target user'
                 });
             }
-            user!.friends.push(targetUserId as any as ObjectId);
-            await user!.save();
+            if (!user!.friends.includes(targetUserId as ObjectId)) {
+                user!.friends.push(targetUserId as ObjectId);
+                await user!.save();
+            } else {
+                reject({
+                    staus: 'client_fail',
+                    message: 'targetuser is already your friend'
+                })
+            }
+            // how to get the lean object of mongodb object?
             resolve(true);
         } catch (error) {
             reject({
-                status: 'fail',
+                status: 'server_fail',
                 message: 'fail at add friends'
             })
         }
