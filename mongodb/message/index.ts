@@ -5,13 +5,10 @@ interface IMessage {
     sender: Schema.Types.ObjectId,
     receiver: Schema.Types.ObjectId,
     content: any,
-    time: Schema.Types.Date
+    time: Schema.Types.Date,
+    image: Schema.Types.String
 }
 const messageSchema: Schema<IMessage> = new Schema<IMessage>({
-    _id: {
-        type: Schema.Types.ObjectId,
-        required: true
-    },
     sender: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -23,11 +20,15 @@ const messageSchema: Schema<IMessage> = new Schema<IMessage>({
         required: true
     },
     time: {
-        type: Schema.Types.Date
+        type: Schema.Types.Date,
+        default: Date.now()
     },
     content: {
         type: Schema.Types.Mixed,
         required: true
+    },
+    image: {
+        type: [Schema.Types.String]
     }
 })
 

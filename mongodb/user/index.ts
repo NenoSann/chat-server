@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { ObjectId, Schema } from "mongoose";
 import { IGroup, groupSchema } from "../group";
 import { IMessage, messageSchema } from "../message";
 import { error } from "console";
@@ -11,7 +11,7 @@ interface IUser {
     avatar?: string,
     groups: Schema.Types.ObjectId[],
     friends: Schema.Types.ObjectId[],
-    chats: Map<string, IMessage[]>
+    chats: Map<string | ObjectId, IMessage[]>
 }
 
 const userSchema: Schema<IUser> = new Schema<IUser>({
@@ -42,7 +42,9 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     }],
     chats: {
         type: Map,
-        of: [messageSchema],
+        of: [Schema.Types.ObjectId],
+        ref: 'Message',
+        default: new Map<string | ObjectId, IMessage[]>()
     }
 })
 

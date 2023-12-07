@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import type { Server as HttpServer } from "http";
 import { receiveMessage } from "./Event/receive";
 import { ServerResponse } from "./lib/ResponseClass";
+import { appendMessage } from "../API/message";
 
 interface ServerToClientEvents {
     noArg: () => void;
@@ -19,14 +20,14 @@ interface ServerToClientEvents {
             userid: string
         }
     }) => void;
-    private_message: (d: { content: string, from: string, senderid: string, sendername: string, senderavatar: string }) => void,
+    private_message: (d: { content: string, from: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void,
     user_disconnect: (key: string) => void
 }
 
 interface ClientToServerEvents {
     hello: (d: string) => void;
     message: (d: string, Response: ServerResponse) => void;
-    private_message: (d: { content: string, to: string, senderid: string, sendername: string, senderavatar: string }) => void
+    private_message: (d: { content: string, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void
 }
 
 interface InterServerEvents {
@@ -91,22 +92,33 @@ const createSocket = function (HttpServer: HttpServer): Server {
             userid: Socket.handshake.headers['x-id'] as string,
             userInfo
         })
+
+
         // handle the private message and redirect it to right recipient
-        Socket.on('private_message', (data: { content: string, to: string, senderid: string, sendername: string, senderavatar: string }) => {
-            const { content, to, senderid, senderavatar, sendername } = data;
+        Socket.on('private_message', async (data) => {
+            const { content, to, senderid, senderavatar, sendername, receiverid } = data;
             console.log('get private message', { content, to });
+            try {
+                // not using await cause overload is massive
+                await appendMessage(senderid, receiverid, content);
+            } catch (error) {
+                console.log(error);
+            }
             Socket.to(to).emit('private_message', {
                 content,
                 from: Socket.id,
                 senderid,
                 sendername,
                 senderavatar,
+                receiverid
             })
         })
+
 
         Socket.on('message', (data) => {
             receiveMessage(Socket, data);
         })
+
 
         Socket.on('disconnect', () => {
             console.log('socket disconnect');
