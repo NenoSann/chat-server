@@ -12,7 +12,10 @@ router.get('/', (req, res) => {
 // handle the user register
 router.post('/register', async (req: Request, res: Response) => {
     try {
-        const { name, password, email } = req.body;
+        const { username: name, pwd: password, email } = req.body;
+        console.log({
+            name, password, email
+        })
         const user = await registerUser(name, email, password);
         res.status(200).json({
             status: 'success',

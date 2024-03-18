@@ -18,7 +18,7 @@ interface IFriend {
     name: string,
     userid: string | ObjectId,
     avatar: string,
-    status: 'online' | 'offline'
+    status?: 'online' | 'offline'
 }
 
 const userSchema: Schema<IUser> = new Schema<IUser>({

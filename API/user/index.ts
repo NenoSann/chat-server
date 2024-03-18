@@ -1,7 +1,8 @@
 import { ObjectId } from "mongoose";
-import { User, IUser } from "../../mongodb/user";
+import { User, IUser, IFriend } from "../../mongodb/user";
 
 import bcrypt from 'bcrypt'
+import { ItemsResponse } from "../interface/response";
 
 /**
  * @NenoSann
@@ -127,4 +128,33 @@ const deleteFriends = async function (userid: string | ObjectId, targetUserId: s
         }
     })
 }
-export { registerUser, getUser, addFriends, deleteFriends }
+
+
+const queryFriends = async function (href: string, userid: string, offset: number = 1, limit: number = 10,) {
+    return new Promise<ItemsResponse<IFriend>>(async (resolve, reject) => {
+        try {
+            const user = await User.findById(userid).lean();
+            const friends: IFriend[] = [];
+            if (user !== null) {
+                // query all the friends 
+                // TODO: need to add start index and end index
+                for (const userid of user.friends) {
+                    const friend = await User.findById(userid).lean();
+                    if (friend !== null) {
+                        friends.push({
+                            name: friend!.name,
+                            avatar: friend!.avatar as string,
+                            userid: friend!._id
+                        })
+                    }
+                }
+            }
+        } catch (error) {
+
+        }
+
+    })
+}
+
+
+export { registerUser, getUser, addFriends, deleteFriends, queryFriends }

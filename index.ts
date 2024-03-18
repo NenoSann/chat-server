@@ -7,7 +7,8 @@ import { createServer } from "http";
 const app = express();
 const httpServer = createServer(app);
 // if (process.env.MONGODB_URI) {
-connectToMongo('mongodb://NenoSan:2440060505Jkl.@43.163.234.220:27017/');
+connectToMongo(process.env.MONGODB_ADMIN + '/chat');
+console.log(process.env.MONGODB_ADMIN + '/chat');
 // } else {
 //     console.error('moongodb uri env variable not found');
 // }
