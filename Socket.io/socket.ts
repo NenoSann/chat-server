@@ -66,7 +66,6 @@ const createSocket = function (HttpServer: HttpServer): Server {
     io.use((socket, next) => {
         const username = socket.handshake.auth.username;
         if (!username) {
-            console.log('invalid username');
         } else {
             // add username property for socket
             (socket as any).username = username;
@@ -76,11 +75,12 @@ const createSocket = function (HttpServer: HttpServer): Server {
     // event listeners here, import events only
     io.on('connection', (Socket) => {
         // get conected user info
+        const auth = Socket.handshake.auth;
         const userInfo = {
-            avatar: Socket.handshake.headers['x-avatar'] as string,
-            username: Socket.handshake.headers['x-username'] as string,
+            avatar: auth['avatar'] as string,
+            username: auth['_id'] as string,
             socketid: Socket.id,
-            userid: Socket.handshake.headers['x-id'] as string,
+            userid: auth['username'] as string,
         }
         console.log('user connect', userInfo);
         // send all active user to Socket
@@ -97,7 +97,6 @@ const createSocket = function (HttpServer: HttpServer): Server {
         // handle the private message and redirect it to right recipient
         Socket.on('private_message', async (data) => {
             const { content, to, senderid, senderavatar, sendername, receiverid } = data;
-            console.log('get private message', { content, to });
             try {
                 // not using await cause overload is massive
                 await appendMessage(senderid, receiverid, content);
@@ -121,7 +120,6 @@ const createSocket = function (HttpServer: HttpServer): Server {
 
 
         Socket.on('disconnect', () => {
-            console.log('socket disconnect');
             const userid = Socket.handshake.headers['x-id'] as string;
             userMap.delete(userid)
             Socket.broadcast.emit('user_disconnect', userid);
