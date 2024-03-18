@@ -84,12 +84,12 @@ const createSocket = function (HttpServer: HttpServer): Server {
         }
         console.log('user connect', userInfo);
         // send all active user to Socket
-        userMap.set(Socket.handshake.headers['x-id'] as string,
+        userMap.set(auth['_id'] as string,
             userInfo);
         Socket.emit('users', JSON.stringify(Array.from(userMap)));
         // tell rest sockets new user connected
         Socket.broadcast.emit('user_connected', {
-            userid: Socket.handshake.headers['x-id'] as string,
+            userid: auth['_id'] as string,
             userInfo
         })
 
