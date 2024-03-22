@@ -2,10 +2,11 @@ import { ObjectId } from "mongoose";
 import { Message, IMessage } from "../../mongodb/message";
 import { User } from "../../mongodb/user";
 import { ItemsResponse } from "../interface/response";
+import { MessageContent } from "../interface/socket";
 
 const appendMessage = async function (senderid: string | ObjectId,
     receiverId: string | ObjectId,
-    content: string,
+    content: MessageContent,
     image?: string[]
 ) {
     console.log(senderid, receiverId, content);

@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import { router } from './router';
 import { createSocket } from "./Socket.io/socket";
 import { createServer } from "http";
+import { env } from "process";
 const app = express();
 const httpServer = createServer(app);
 // if (process.env.MONGODB_URI) {

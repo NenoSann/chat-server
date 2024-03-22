@@ -1,4 +1,4 @@
-import { IUser } from "../../mongodb/user"
+import { IFriend, IUser } from "../../mongodb/user"
 
 interface BaseResponse {
     status: 'success' | 'client_fail' | 'server_fail',
@@ -15,9 +15,11 @@ interface ResponseWithOffset extends BaseResponse {
 
 
 interface FriendsResponse extends BaseResponse {
-    items: string[],
-    total: number
+    id: string, // the id of user being requested
+    items: IFriend[], // over all items
+    total: number,
 }
+
 interface ItemsResponse<ObjectType> extends ResponseWithOffset {
     items: ObjectType[]
 }

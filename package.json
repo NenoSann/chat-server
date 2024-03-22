@@ -6,7 +6,8 @@
   "scripts": {
     "test": "tsc && jest --detect-open-handles",
     "dev": "tsc && node ./dist/index.js",
-    "qk": "node ./dist/index.js"
+    "qk": "node ./dist/index.js",
+    "prod":"set NODE_ENV=production && node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",

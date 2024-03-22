@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { registerUser, getUser, addFriends, deleteFriends } from './API/user';
 import { createGroup } from './API/group';
 import { BaseResponse } from './API/interface/response';
+import { queryFriends } from './API/user';
+let base = "localhost:8081";
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -107,11 +109,23 @@ router.post('/addFriend', async (req: Request, res: Response) => {
     }
 })
 
-router.get('/friend', async (req: Request, res: Response) => {
+router.get('/friends', async (req: Request, res: Response) => {
     try {
-
+        console.log('got request for friends');
+        const url = base + req.url;
+        const { userId, offset, limit } = req.query;
+        console.log({
+            userId, offset, limit
+        })
+        if (userId) {
+            const response = await queryFriends(url, userId as string, Number(offset), Number(limit));
+            res.json(response);
+        }
     } catch (error) {
-
+        res.send({
+            message: error,
+            status: 'client_fail'
+        })
     }
 })
 export { router };

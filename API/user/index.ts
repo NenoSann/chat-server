@@ -130,31 +130,56 @@ const deleteFriends = async function (userid: string | ObjectId, targetUserId: s
 }
 
 
-const queryFriends = async function (href: string, userid: string, offset: number = 1, limit: number = 10,) {
+const queryFriends = async function (href: string, userid: string, offset: number = 0, limit: number = 10) {
     return new Promise<ItemsResponse<IFriend>>(async (resolve, reject) => {
         try {
+            const url = new URL(href);
+            const urlOffset = Number(url.searchParams.get('offset'));
             const user = await User.findById(userid).lean();
+            const total = user?.friends.length as number;
+            const friendIds = user?.friends.slice(offset * limit, (offset + 1) * limit);
             const friends: IFriend[] = [];
-            if (user !== null) {
-                // query all the friends 
-                // TODO: need to add start index and end index
-                for (const userid of user.friends) {
-                    const friend = await User.findById(userid).lean();
+            if (friendIds !== undefined) {
+                // query all the friends
+                for (const userid of friendIds as Array<ObjectId>) {
+                    const friend = await User.findById(userid).select('name avatar _id online').lean()
                     if (friend !== null) {
                         friends.push({
                             name: friend!.name,
                             avatar: friend!.avatar as string,
-                            userid: friend!._id
-                        })
+                            userid: friend!._id,
+                            online: friend.online as unknown as boolean,
+                        });
                     }
                 }
+            } else {
+                throw new Error();
             }
+            resolve({
+                href,
+                offset,
+                limit,
+                previous: urlOffset > 0 ? _createHref(url, 'prev') : undefined,
+                next: (offset + 1) * limit < total ? _createHref(url, 'next') : undefined,
+                total,
+                status: 'success',
+                items: friends,
+            });
         } catch (error) {
-
+            reject('fail to queryFriends');
         }
+    });
+};
 
-    })
+function _createHref(href: URL, type: 'prev' | 'next'): string {
+    const params = href.searchParams;
+    const currentOffset = Number(params.get('offset'));
+    if (type === 'prev') {
+        params.set('offset', (currentOffset - 1).toString());
+    } else if (type === 'next') {
+        params.set('offset', (currentOffset + 1).toString());
+    }
+    return href.toString();
 }
-
 
 export { registerUser, getUser, addFriends, deleteFriends, queryFriends }

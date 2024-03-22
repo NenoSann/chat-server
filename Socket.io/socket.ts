@@ -3,6 +3,7 @@ import type { Server as HttpServer } from "http";
 import { receiveMessage } from "./Event/receive";
 import { ServerResponse } from "./lib/ResponseClass";
 import { appendMessage } from "../API/message";
+import { MessageContent } from "../API/interface/socket";
 
 interface ServerToClientEvents {
     noArg: () => void;
@@ -20,14 +21,14 @@ interface ServerToClientEvents {
             userid: string
         }
     }) => void;
-    private_message: (d: { content: string, from: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void,
+    private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void,
     user_disconnect: (key: string) => void
 }
 
 interface ClientToServerEvents {
     hello: (d: string) => void;
     message: (d: string, Response: ServerResponse) => void;
-    private_message: (d: { content: string, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void
+    private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void
 }
 
 interface InterServerEvents {
@@ -84,12 +85,12 @@ const createSocket = function (HttpServer: HttpServer): Server {
         }
         console.log('user connect', userInfo);
         // send all active user to Socket
-        userMap.set(auth['username'] as string,
+        userMap.set(auth['_id'] as string,
             userInfo);
         Socket.emit('users', JSON.stringify(Array.from(userMap)));
         // tell rest sockets new user connected
         Socket.broadcast.emit('user_connected', {
-            userid: auth['username'] as string,
+            userid: auth['_id'] as string,
             userInfo
         })
 
@@ -120,7 +121,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
 
 
         Socket.on('disconnect', () => {
-            const userid = Socket.handshake.headers['x-id'] as string;
+            const userid = Socket.handshake.auth['_id'] as string;
             userMap.delete(userid)
             Socket.broadcast.emit('user_disconnect', userid);
         })

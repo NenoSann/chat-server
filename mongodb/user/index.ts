@@ -11,14 +11,15 @@ interface IUser {
     avatar?: string,
     groups: Schema.Types.ObjectId[],
     friends: Schema.Types.ObjectId[],
-    chats: Map<string | ObjectId, IMessage[]>
+    chats: Map<string | ObjectId, IMessage[]>,
+    online: Schema.Types.Boolean
 }
 
 interface IFriend {
     name: string,
     userid: string | ObjectId,
     avatar: string,
-    status?: 'online' | 'offline'
+    online: boolean
 }
 
 const userSchema: Schema<IUser> = new Schema<IUser>({
@@ -52,6 +53,10 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
         of: [Schema.Types.ObjectId],
         ref: 'Message',
         default: new Map<string | ObjectId, IMessage[]>()
+    },
+    online: {
+        type: Schema.Types.Boolean,
+        default: false
     }
 })
 
