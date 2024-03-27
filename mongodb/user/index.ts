@@ -1,4 +1,4 @@
-import mongoose, { ObjectId, Schema } from "mongoose";
+import mongoose, { FlattenMaps, ObjectId, Schema } from "mongoose";
 import { IGroup, groupSchema } from "../group";
 import { IMessage, messageSchema } from "../message";
 import { error } from "console";
@@ -7,7 +7,7 @@ interface IUser {
     name: string,
     password: string,
     email: string,
-    _id: Schema.Types.ObjectId,
+    _id: Schema.Types.ObjectId | ObjectId | string,
     avatar?: string,
     groups: Schema.Types.ObjectId[],
     friends: Schema.Types.ObjectId[],
@@ -19,7 +19,7 @@ interface IFriend {
     name: string,
     userid: string | ObjectId,
     avatar: string,
-    online: boolean
+    online: boolean | Boolean | Schema.Types.Boolean
 }
 
 const userSchema: Schema<IUser> = new Schema<IUser>({

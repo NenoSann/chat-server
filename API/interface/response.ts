@@ -1,3 +1,4 @@
+import { ObjectId, Schema } from "mongoose"
 import { IFriend, IUser } from "../../mongodb/user"
 
 interface BaseResponse {
@@ -13,6 +14,18 @@ interface ResponseWithOffset extends BaseResponse {
     total: number,
 }
 
+interface UserResponse extends BaseResponse {
+    data: {
+        name: string,
+        email: string,
+        _id: string | ObjectId,
+        avatar?: string,
+        groups: Array<string | ObjectId>,
+        friends: Array<IFriend>,
+        online: boolean | Schema.Types.Boolean
+    }
+}
+
 
 interface FriendsResponse extends BaseResponse {
     id: string, // the id of user being requested
@@ -24,4 +37,4 @@ interface ItemsResponse<ObjectType> extends ResponseWithOffset {
     items: ObjectType[]
 }
 
-export { ItemsResponse, ResponseWithOffset, FriendsResponse, BaseResponse }
+export { UserResponse, ItemsResponse, ResponseWithOffset, FriendsResponse, BaseResponse }

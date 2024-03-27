@@ -2,7 +2,7 @@ import { ObjectId } from "mongoose";
 import { User, IUser, IFriend } from "../../mongodb/user";
 
 import bcrypt from 'bcrypt'
-import { ItemsResponse } from "../interface/response";
+import { ItemsResponse, UserResponse } from "../interface/response";
 
 /**
  * @NenoSann
@@ -34,12 +34,13 @@ const registerUser = function (name: string, email: string, password: string): P
     });
 };
 
-const getUser = async function (email: string, password: string): Promise<IUser> {
-    return new Promise<IUser>(async (resolve, reject) => {
+const getUser = async function (email: string, password: string): Promise<UserResponse> {
+    return new Promise<UserResponse>(async (resolve, reject) => {
         try {
             console.log(email, password)
-            const user = await User.findOne({ email: email }).exec();
-            console.log(user);
+            const user = await User.findOne({ email: email },
+                { name: 1, email: 1, avatar: 1, groups: 1, friends: 1, online: 1, _id: 1, password: 1 }
+            ).lean().exec();
             let passwordValid = false;
             if (user !== null) {
                 passwordValid = await bcrypt.compare(password, user?.password as string);
@@ -53,7 +54,16 @@ const getUser = async function (email: string, password: string): Promise<IUser>
                 (error as any).statusCode = 401; // Custom property indicating the status code
                 reject(error);
             } else {
-                resolve(user as IUser);
+                const friends = await queryFriendInfo(user.friends);
+                const { password, ...updatedUser } = user; // remove the password from user
+                const response: UserResponse = {
+                    data: {
+                        ...updatedUser,
+                        friends,
+                    },
+                    status: 'success'
+                }
+                resolve(response);
             }
         } catch (error) {
             const dbError = new Error('Something wrong with MongoDB');
@@ -182,4 +192,30 @@ function _createHref(href: URL, type: 'prev' | 'next'): string {
     return href.toString();
 }
 
+/**
+ * 
+ * @param userIds 
+ * @returns 
+ */
+
+async function queryFriendInfo(userIds: Array<string | ObjectId>): Promise<Array<IFriend>> {
+    try {
+        const result = new Array<IFriend>();
+        for (const id of userIds) {
+            const targetUser = await User.findById(id).lean().exec();
+            if (targetUser === null) {
+                throw new Error(`cannot find user ${id} in queryUserInfo.`)
+            }
+            result.push({
+                name: targetUser.name,
+                userid: targetUser._id,
+                avatar: targetUser.avatar as string,
+                online: targetUser.online as unknown as boolean
+            })
+        }
+        return result;
+    } catch (error) {
+        throw error;
+    }
+}
 export { registerUser, getUser, addFriends, deleteFriends, queryFriends }
