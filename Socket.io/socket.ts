@@ -4,6 +4,7 @@ import { receiveMessage } from "./Event/receive";
 import { ServerResponse } from "./lib/ResponseClass";
 import { appendMessage } from "../API/message";
 import { MessageContent } from "../API/interface/socket";
+import { group } from "console";
 
 interface ServerToClientEvents {
     noArg: () => void;
@@ -22,13 +23,19 @@ interface ServerToClientEvents {
         }
     }) => void;
     private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void,
-    user_disconnect: (key: string) => void
+    user_disconnect: (key: string) => void;
+
+    // group events:
+    user_join_group: (d: { userId: string, userName: string, userAvatar: string }) => void;
+    user_group_message: (d: { content: MessageContent, from: string, sendername: string, senderavatar: string }) => void;
 }
 
 interface ClientToServerEvents {
     hello: (d: string) => void;
     message: (d: string, Response: ServerResponse) => void;
-    private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void
+    private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void;
+    join_group: (d: { groupIds: Array<string>, userId: string, userName: string, userAvatar: string }) => void;
+    group_message: (d: { content: MessageContent, to: string, senderid: string, sendername: string, senderavatar: string }) => void;
 }
 
 interface InterServerEvents {
@@ -114,6 +121,18 @@ const createSocket = function (HttpServer: HttpServer): Server {
             })
         })
 
+        // connect the user socket to al group ids, and emit a event to all users
+        // in target group
+        Socket.on('join_group', (data) => {
+            const { groupIds, userId, userName, userAvatar } = data;
+            Socket.join(groupIds);
+            io.to(groupIds).emit('user_join_group', { userId, userName, userAvatar });
+        })
+
+        Socket.on('group_message', (data) => {
+            const { content, to, senderid, sendername, senderavatar } = data;
+            Socket.to(to).emit('user_group_message', { content, from: senderid, senderavatar, sendername });
+        })
 
         Socket.on('message', (data) => {
             receiveMessage(Socket, data);

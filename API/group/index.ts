@@ -4,7 +4,6 @@
 import { ObjectId } from "mongoose";
 import { Group, IGroup } from "../../mongodb/group";
 import { User } from "../../mongodb/user";
-import { userInfo } from "os";
 
 /**
  * @description create a group that only caontains the founder
@@ -83,6 +82,22 @@ const disbandGroup = async function (groupid: string | ObjectId, userid: string 
     })
 }
 
+/**
+ * @description 
+ * @param groupIds - Array of group id,
+ * @returns the group infos in Promise
+ */
+async function queryGroups(groupIds: Array<string>) {
+    const promiseArr: Array<Promise<IGroup>> = groupIds.map((id) => {
+        return new Promise((resolve, reject) => {
+            Group.findById(id).then((res) => {
+                resolve(res as IGroup);
+            }).catch((err) => reject(err));
+        })
+    })
+    return Promise.all(promiseArr);
+}
 
 
-export { createGroup, addUserToGroup, disbandGroup }
+
+export { createGroup, addUserToGroup, disbandGroup, queryGroups }
