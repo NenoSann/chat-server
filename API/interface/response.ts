@@ -1,5 +1,6 @@
 import { ObjectId, Schema } from "mongoose"
 import { IFriend, IUser } from "../../mongodb/user"
+import { GroupResponse } from "../../mongodb/group"
 
 interface BaseResponse {
     status: 'success' | 'client_fail' | 'server_fail',
@@ -20,7 +21,7 @@ interface UserResponse extends BaseResponse {
         email: string,
         _id: string | ObjectId,
         avatar?: string,
-        groups: Array<string | ObjectId>,
+        groups: Array<GroupResponse>,
         friends: Array<IFriend>,
         online: boolean | Schema.Types.Boolean
     }

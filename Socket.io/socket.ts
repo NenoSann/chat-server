@@ -4,7 +4,6 @@ import { receiveMessage } from "./Event/receive";
 import { ServerResponse } from "./lib/ResponseClass";
 import { appendMessage } from "../API/message";
 import { MessageContent } from "../API/interface/socket";
-import { group } from "console";
 
 interface ServerToClientEvents {
     noArg: () => void;
@@ -125,12 +124,14 @@ const createSocket = function (HttpServer: HttpServer): Server {
         // in target group
         Socket.on('join_group', (data) => {
             const { groupIds, userId, userName, userAvatar } = data;
+            console.log('got join group emit');
             Socket.join(groupIds);
             io.to(groupIds).emit('user_join_group', { userId, userName, userAvatar });
         })
 
         Socket.on('group_message', (data) => {
             const { content, to, senderid, sendername, senderavatar } = data;
+            console.log('got group message: \n', data);
             Socket.to(to).emit('user_group_message', { content, from: senderid, senderavatar, sendername });
         })
 

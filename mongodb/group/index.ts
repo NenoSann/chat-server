@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types } from "mongoose"
+import mongoose, { ObjectId, Schema, Types } from "mongoose"
 import { IUser, userSchema } from "../user"
 const defaultAvatar = 'http://imagebucket-1322308688.cos.ap-tokyo.myqcloud.com/chat/group/test.png';
 interface IGroup {
@@ -6,6 +6,11 @@ interface IGroup {
     members: Schema.Types.ObjectId[],
     founder: Schema.Types.ObjectId,
     groupAvatar: string | Schema.Types.String
+}
+interface GroupResponse {
+    groupName: string | Schema.Types.ObjectId,
+    groupAvatar: string | Schema.Types.ObjectId,
+    _id: string | ObjectId | Schema.Types.ObjectId
 }
 
 const groupSchema: Schema<IGroup> = new Schema<IGroup>({
@@ -30,4 +35,4 @@ const groupSchema: Schema<IGroup> = new Schema<IGroup>({
 
 const Group = mongoose.model<IGroup>('Group', groupSchema);
 
-export { IGroup, Group, groupSchema }
+export { IGroup, Group, groupSchema, GroupResponse };

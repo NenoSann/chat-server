@@ -1,6 +1,6 @@
 import { ObjectId } from "mongoose";
 import { User, IUser, IFriend } from "../../mongodb/user";
-import { Group } from "../../mongodb/group";
+import { Group, GroupResponse } from "../../mongodb/group";
 import bcrypt from 'bcrypt'
 import { ItemsResponse, UserResponse } from "../interface/response";
 
@@ -34,6 +34,12 @@ const registerUser = function (name: string, email: string, password: string): P
     });
 };
 
+/**
+ * Retrieves a user based on the provided email and password.
+ *
+ * @param {string} email - The email of the user.
+ * @param {string} password - The password of the user.
+ */
 const getUser = async function (email: string, password: string): Promise<UserResponse> {
     return new Promise<UserResponse>(async (resolve, reject) => {
         try {
@@ -55,13 +61,16 @@ const getUser = async function (email: string, password: string): Promise<UserRe
                 reject(error);
             } else {
                 const friends = await queryFriendInfo(user.friends);
+                const groups = await queryGroups(user.groups) as Array<GroupResponse>;
                 const { password, ...updatedUser } = user; // remove the password from user
                 const response: UserResponse = {
                     data: {
                         ...updatedUser,
                         friends,
+                        groups
                     },
-                    status: 'success'
+                    status: 'success',
+                    message: 'successfully get user'
                 }
                 resolve(response);
             }
@@ -73,6 +82,12 @@ const getUser = async function (email: string, password: string): Promise<UserRe
     })
 }
 
+/**
+ * Adds a friend for a given user.
+ *
+ * @param {string | ObjectId} userId - The ID of the user.
+ * @param {string | ObjectId} targetUserId - The ID of the target user to add as a friend.
+ */
 const addFriends = async function (userId: string | ObjectId, targetUserId: string | ObjectId) {
     return new Promise<Boolean>(async (resolve, reject) => {
         try {
@@ -109,7 +124,13 @@ const addFriends = async function (userId: string | ObjectId, targetUserId: stri
         }
     })
 }
-
+/**
+ * Deletes a friend for a given user.
+ *
+ * @param {string | ObjectId} userid - The ID of the user.
+ * @param {string | ObjectId} targetUserId - The ID of the target user to delete as a friend.
+ * @returns {Promise<Boolean>} - A promise that resolves to a boolean indicating the success of deleting the friend.
+ */
 const deleteFriends = async function (userid: string | ObjectId, targetUserId: string | ObjectId): Promise<Boolean> {
     return new Promise<Boolean>(async (resolve, reject) => {
         try {
@@ -139,7 +160,14 @@ const deleteFriends = async function (userid: string | ObjectId, targetUserId: s
     })
 }
 
-
+/**
+ * Queries a user's friends based on the provided parameters.
+ *
+ * @param {string} href - The href parameter for pagination.
+ * @param {string} userid - The ID of the user.
+ * @param {number} [offset=0] - The offset parameter for pagination.
+ * @param {number} [limit=10] - The limit parameter for pagination.
+ */
 const queryFriends = async function (href: string, userid: string, offset: number = 0, limit: number = 10) {
     return new Promise<ItemsResponse<IFriend>>(async (resolve, reject) => {
         try {
@@ -192,11 +220,7 @@ function _createHref(href: URL, type: 'prev' | 'next'): string {
     return href.toString();
 }
 
-/**
- * 
- * @param userIds 
- * @returns 
- */
+
 
 async function queryFriendInfo(userIds: Array<string | ObjectId>): Promise<Array<IFriend>> {
     try {
@@ -254,6 +278,36 @@ async function quitGroup(groupId: string | ObjectId, userId: string | ObjectId) 
                 }
             }
             resolve();
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+/**
+ * Queries groups based on the provided group IDs.
+ *
+ * @param {Array<string> | Array<ObjectId>} groupIds - An array of group IDs to query.
+ * @returns {Promise<Array<{ _id: string | ObjectId, groupName: string, groupAvatar: string }> | Error>} - A promise that resolves to an array of group objects or rejects with an error.
+ */
+async function queryGroups(groupIds: Array<string> | Array<ObjectId>): Promise<Array<{ _id: string | ObjectId; groupName: string; groupAvatar: string; }> | Error> {
+    return new Promise<Array<{
+        _id: string | ObjectId, groupName: string, groupAvatar: string
+    }> | Error>(async (resolve, reject) => {
+        try {
+            const res = [];
+            for (const id of groupIds) {
+                const group = await Group.findById(id).lean().exec();
+                if (group) {
+                    const { _id, groupAvatar, groupName } = group;
+                    res.push({
+                        _id: (_id as unknown as ObjectId),
+                        groupAvatar: (groupAvatar as string),
+                        groupName: (groupName as string)
+                    })
+                }
+            }
+            resolve(res);
         } catch (error) {
             reject(error);
         }
