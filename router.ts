@@ -1,13 +1,12 @@
 import express from 'express'
 import { Request, Response } from 'express';
-import { registerUser, getUser, addFriends, deleteFriends } from './API/user';
+import { registerUser, getUser, addFriends, deleteFriends, quitGroup, joinGroup, queryFriends } from './API/user';
 import { createGroup } from './API/group';
 import { BaseResponse } from './API/interface/response';
-import { queryFriends } from './API/user';
 let base = "localhost:8081";
 const router = express.Router();
 
-router.get('/', (req, res) => {
+router.get('/', (_req, res) => {
     res.send('connect to express server');
 })
 
@@ -128,4 +127,41 @@ router.get('/friends', async (req: Request, res: Response) => {
         })
     }
 })
+
+router.post('/joinGroup', async (req: Request, res: Response) => {
+    try {
+        // const url = base + req.url
+        const { userId, groupId } = req.query;
+        await joinGroup(groupId as string, userId as string).then(() => {
+            res.status(200).send({
+                message: 'successfully join group',
+                status: 'Success'
+            })
+        })
+    } catch {
+        res.status(500).send({
+            message: 'cannot join Group for user',
+            status: 'server_fail'
+        })
+    }
+})
+
+router.post('/quitGroup', async (req: Request, res: Response) => {
+    try {
+        const { userId, groupId } = req.query;
+        await quitGroup(groupId as string, userId as string).then(() => {
+            res.status(200).send({
+                message: 'successfully quit the group',
+                status: 'success'
+            })
+        })
+    } catch {
+        res.status(500).send({
+            message: 'cannot quit group for user',
+            status: 'server_fail'
+        })
+    }
+
+})
+
 export { router };

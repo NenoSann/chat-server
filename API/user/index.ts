@@ -1,6 +1,6 @@
 import { ObjectId } from "mongoose";
 import { User, IUser, IFriend } from "../../mongodb/user";
-
+import { Group } from "../../mongodb/group";
 import bcrypt from 'bcrypt'
 import { ItemsResponse, UserResponse } from "../interface/response";
 
@@ -218,4 +218,46 @@ async function queryFriendInfo(userIds: Array<string | ObjectId>): Promise<Array
         throw error;
     }
 }
-export { registerUser, getUser, addFriends, deleteFriends, queryFriends }
+
+async function joinGroup(groupId: string | ObjectId, userId: string | ObjectId) {
+    return new Promise<void | Error>(async (resolve, reject) => {
+        try {
+            const user = await User.findById(userId);
+            const group = await Group.findById(groupId);
+            if (user && group) {
+                user.groups.push(groupId as ObjectId);
+                group.members.push(userId as ObjectId)
+                user.save();
+                group.save();
+                resolve();
+            }
+
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+async function quitGroup(groupId: string | ObjectId, userId: string | ObjectId) {
+    return new Promise<void | Error>(async (resolve, reject) => {
+        try {
+            const user = await User.findById(userId);
+            const group = await Group.findById(groupId);
+            if (user && group) {
+                const userIndex = group.members.indexOf(userId as ObjectId);
+                const groupIndex = user.groups.indexOf(groupId as ObjectId);
+                if (userIndex !== -1 && groupIndex !== -1) {
+                    user.groups.splice(groupIndex, 1);
+                    group.members.splice(userIndex, 1);
+                    await user.save();
+                    await group.save();
+                }
+            }
+            resolve();
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+export { registerUser, getUser, addFriends, deleteFriends, queryFriends, joinGroup, quitGroup }

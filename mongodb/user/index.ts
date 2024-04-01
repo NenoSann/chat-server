@@ -46,7 +46,8 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     },
     friends: [{
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        default: []
     }],
     chats: {
         type: Map,
