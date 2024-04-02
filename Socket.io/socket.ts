@@ -34,7 +34,7 @@ interface ClientToServerEvents {
     message: (d: string, Response: ServerResponse) => void;
     private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void;
     join_group: (d: { groupIds: Array<string>, userId: string, userName: string, userAvatar: string }) => void;
-    group_message: (d: { content: MessageContent, to: string, senderid: string, sendername: string, senderavatar: string }) => void;
+    group_message: (d: { content: MessageContent, to: string, senderid: string, sendername: string, senderavatar: string }, callback: Function) => void;
 }
 
 interface InterServerEvents {
@@ -126,13 +126,14 @@ const createSocket = function (HttpServer: HttpServer): Server {
             const { groupIds, userId, userName, userAvatar } = data;
             console.log('got join group emit');
             Socket.join(groupIds);
-            io.to(groupIds).emit('user_join_group', { userId, userName, userAvatar });
+            Socket.broadcast.to(groupIds).emit('user_join_group', { userId, userName, userAvatar });
         })
 
-        Socket.on('group_message', (data) => {
+        Socket.on('group_message', (data, callback) => {
             const { content, to, senderid, sendername, senderavatar } = data;
             console.log('got group message: \n', data);
-            Socket.to(to).emit('user_group_message', { content, from: to, senderid, senderavatar, sendername });
+            Socket.broadcast.to(to).emit('user_group_message', { content, from: to, senderid, senderavatar, sendername });
+            callback();
         })
 
         Socket.on('message', (data) => {
