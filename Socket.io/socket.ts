@@ -26,7 +26,7 @@ interface ServerToClientEvents {
 
     // group events:
     user_join_group: (d: { userId: string, userName: string, userAvatar: string }) => void;
-    user_group_message: (d: { content: MessageContent, from: string, sendername: string, senderavatar: string }) => void;
+    user_group_message: (d: { content: MessageContent, from: string, senderid: string, sendername: string, senderavatar: string }) => void;
 }
 
 interface ClientToServerEvents {
@@ -132,7 +132,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
         Socket.on('group_message', (data) => {
             const { content, to, senderid, sendername, senderavatar } = data;
             console.log('got group message: \n', data);
-            Socket.to(to).emit('user_group_message', { content, from: senderid, senderavatar, sendername });
+            Socket.to(to).emit('user_group_message', { content, from: to, senderid, senderavatar, sendername });
         })
 
         Socket.on('message', (data) => {
