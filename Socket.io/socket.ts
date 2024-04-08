@@ -32,7 +32,7 @@ interface ServerToClientEvents {
 interface ClientToServerEvents {
     hello: (d: string) => void;
     message: (d: string, Response: ServerResponse) => void;
-    private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void;
+    private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }, callback: Function) => void;
     join_group: (d: { groupIds: Array<string>, userId: string, userName: string, userAvatar: string }) => void;
     group_message: (d: { content: MessageContent, to: string, senderid: string, sendername: string, senderavatar: string }, callback: Function) => void;
 }
@@ -102,11 +102,12 @@ const createSocket = function (HttpServer: HttpServer): Server {
 
 
         // handle the private message and redirect it to right recipient
-        Socket.on('private_message', async (data) => {
+        Socket.on('private_message', async (data, callback: Function) => {
             const { content, to, senderid, senderavatar, sendername, receiverid } = data;
             try {
                 // not using await cause overload is massive
                 await appendMessage(senderid, receiverid, content);
+                callback();
             } catch (error) {
                 console.log(error);
             }
@@ -133,7 +134,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
             const { content, to, senderid, sendername, senderavatar } = data;
             console.log('got group message: \n', data);
             Socket.broadcast.to(to).emit('user_group_message', { content, from: to, senderid, senderavatar, sendername });
-            callback();
+            callback(true);
         })
 
         Socket.on('message', (data) => {
