@@ -21,7 +21,7 @@ interface ServerToClientEvents {
             userid: string
         }
     }) => void;
-    private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }) => void,
+    private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, receivername: string, receiveravatar: string, sendername: string, senderavatar: string }) => void,
     user_disconnect: (key: string) => void;
 
     // group events:
@@ -32,7 +32,7 @@ interface ServerToClientEvents {
 interface ClientToServerEvents {
     hello: (d: string) => void;
     message: (d: string, Response: ServerResponse) => void;
-    private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, sendername: string, senderavatar: string }, callback: Function) => void;
+    private_message: (d: { content: MessageContent, to: string, senderid: string, receiverid: string, receivername: string, receiveravatar: string, sendername: string, senderavatar: string }, callback: Function) => void;
     join_group: (d: { groupIds: Array<string>, userId: string, userName: string, userAvatar: string }) => void;
     group_message: (d: { content: MessageContent, to: string, senderid: string, sendername: string, senderavatar: string }, callback: Function) => void;
 }
@@ -103,7 +103,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
 
         // handle the private message and redirect it to right recipient
         Socket.on('private_message', async (data, callback: Function) => {
-            const { content, to, senderid, senderavatar, sendername, receiverid } = data;
+            const { content, to, senderid, senderavatar, sendername, receiverid, receiveravatar, receivername } = data;
             try {
                 // not using await cause overload is massive
                 await appendMessage(senderid, receiverid, content);
@@ -117,7 +117,9 @@ const createSocket = function (HttpServer: HttpServer): Server {
                 senderid,
                 sendername,
                 senderavatar,
-                receiverid
+                receiverid,
+                receiveravatar,
+                receivername
             })
         })
 
