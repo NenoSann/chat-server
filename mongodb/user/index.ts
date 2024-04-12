@@ -12,7 +12,8 @@ interface IUser {
     groups: Schema.Types.ObjectId[],
     friends: Schema.Types.ObjectId[],
     chats: Map<string | ObjectId, IMessage[]>,
-    online: Schema.Types.Boolean
+    unreadChats: Map<string | ObjectId, IMessage[]>,
+    online: Schema.Types.Boolean | boolean
 }
 
 interface IFriend {
@@ -50,6 +51,13 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
         default: []
     }],
     chats: {
+        type: Map,
+        of: [Schema.Types.ObjectId],
+        ref: 'Message',
+        default: new Map<string | ObjectId, IMessage[]>()
+    },
+    // newly added filed
+    unreadChats: {
         type: Map,
         of: [Schema.Types.ObjectId],
         ref: 'Message',
