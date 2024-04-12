@@ -44,12 +44,12 @@ const appendMessage = async function (senderId: string | ObjectId,
                 // if user is not oneline, then check the unread chats
                 if (sender.online === false) {
                     console.log('sender is offline')
-                    sender.unreadChats.has(receiverId) ? sender.unreadChats.set(receiverId, []) : undefined;
+                    !sender.unreadChats.has(receiverId) ? sender.unreadChats.set(receiverId, []) : undefined;
                     sender.unreadChats.get(receiverId)?.unshift(newMessage.id);
                 }
                 if (receiver.online === false) {
                     console.log('receiver is offline')
-                    receiver.unreadChats.has(senderId) ? receiver.unreadChats.set(senderId, []) : undefined;
+                    !receiver.unreadChats.has(senderId) ? receiver.unreadChats.set(senderId, []) : undefined;
                     receiver.unreadChats.get(senderId)?.unshift(newMessage.id);
                 }
                 await receiver.save();
