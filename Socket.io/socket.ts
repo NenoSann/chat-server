@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import type { Server as HttpServer } from "http";
 import { receiveMessage } from "./Event/receive";
 import { ServerResponse } from "./lib/ResponseClass";
+import { toggleUserOnline } from "../API/user";
 import { appendMessage } from "../API/message";
 import { MessageContent } from "../API/interface/socket";
 
@@ -99,7 +100,8 @@ const createSocket = function (HttpServer: HttpServer): Server {
             userid: auth['_id'] as string,
             userInfo
         })
-
+        // set connected user's online state to true
+        toggleUserOnline(userInfo.userid, true);
 
         // handle the private message and redirect it to right recipient
         Socket.on('private_message', async (data, callback: Function) => {

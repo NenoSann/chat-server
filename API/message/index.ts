@@ -4,19 +4,27 @@ import { User } from "../../mongodb/user";
 import { ItemsResponse } from "../interface/response";
 import { MessageContent } from "../interface/socket";
 
-const appendMessage = async function (senderid: string | ObjectId,
+/**
+ * Appends a message to the sender and receiver's chat history and performs related operations.
+ *
+ * @param {string|ObjectId} senderId - The ID of the sender.
+ * @param {string|ObjectId} receiverId - The ID of the receiver.
+ * @param {MessageContent} content - The content of the message.
+ * @param {string[]} [image] - Optional array of image URLs associated with the message.
+ */
+const appendMessage = async function (senderId: string | ObjectId,
     receiverId: string | ObjectId,
     content: MessageContent,
     image?: string[]
 ) {
-    console.log(senderid, receiverId, content);
+    console.log(senderId, receiverId, content);
     return new Promise<Boolean>(async (resolve, reject) => {
         try {
-            const sender = await User.findById(senderid);
+            const sender = await User.findById(senderId);
             const receiver = await User.findById(receiverId);
             if (sender !== null && receiver !== null) {
                 const newMessage = new Message({
-                    sender: senderid,
+                    sender: senderId,
                     receiver: receiverId,
                     time: Date.now(),
                     content,
@@ -26,12 +34,24 @@ const appendMessage = async function (senderid: string | ObjectId,
                 // check if has chat before
                 if (!sender.chats.has(receiverId as string)) {
                     sender.chats.set(receiverId as string, []);
+                    sender.chats.get(receiverId)?.unshift(newMessage.id);
                 }
-                if (!receiver.chats.has(senderid as string)) {
-                    receiver.chats.set(senderid as string, []);
+                if (!receiver.chats.has(senderId as string)) {
+                    receiver.chats.set(senderId as string, []);
+                    receiver.chats.get(senderId)?.unshift(newMessage.id);
                 }
-                sender.chats.get(receiverId)?.unshift(newMessage.id);
-                receiver.chats.get(senderid)?.unshift(newMessage.id);
+                console.log('is sender and receiver online? ', sender.online, receiver.online);
+                // if user is not oneline, then check the unread chats
+                if (sender.online === false) {
+                    console.log('sender is offline')
+                    sender.unreadChats.has(receiverId) ? sender.unreadChats.set(receiverId, []) : undefined;
+                    sender.unreadChats.get(receiverId)?.unshift(newMessage.id);
+                }
+                if (receiver.online === false) {
+                    console.log('receiver is offline')
+                    receiver.unreadChats.has(senderId) ? receiver.unreadChats.set(senderId, []) : undefined;
+                    receiver.unreadChats.get(senderId)?.unshift(newMessage.id);
+                }
                 await receiver.save();
                 await sender.save();
                 resolve(true);
@@ -87,5 +107,6 @@ const queryMessage = async function (href: string | URL, userid: string | Object
         }
     })
 }
+
 
 export { appendMessage, queryMessage }

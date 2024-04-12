@@ -314,4 +314,19 @@ async function queryGroups(groupIds: Array<string> | Array<ObjectId>): Promise<A
     })
 }
 
+export async function toggleUserOnline(userId: string | ObjectId, state: boolean) {
+    return new Promise<boolean>(async (resolve, reject) => {
+        try {
+            const user = await User.findById(userId);
+            if (user) {
+                user.online = state;
+                await user.save();
+                resolve(true);
+            }
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export { registerUser, getUser, addFriends, deleteFriends, queryFriends, joinGroup, quitGroup }
