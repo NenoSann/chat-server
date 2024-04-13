@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { registerUser, getUser, addFriends, deleteFriends, quitGroup, joinGroup, queryFriends } from './API/user';
 import { createGroup } from './API/group';
 import { BaseResponse } from './API/interface/response';
+import { queryUnreadChats } from './API/message';
 let base = "localhost:8081";
 const router = express.Router();
 
@@ -125,6 +126,18 @@ router.get('/friends', async (req: Request, res: Response) => {
             message: error,
             status: 'client_fail'
         })
+    }
+})
+
+router.get('/queryUnreadChats', async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.query;
+        if (userId) {
+            const result = await queryUnreadChats(userId as string);
+            res.status(200).send(result);
+        }
+    } catch {
+
     }
 })
 

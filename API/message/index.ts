@@ -3,6 +3,7 @@ import { Message, IMessage } from "../../mongodb/message";
 import { User } from "../../mongodb/user";
 import { ItemsResponse } from "../interface/response";
 import { MessageContent } from "../interface/socket";
+import { queryUser } from "../user";
 
 /**
  * Appends a message to the sender and receiver's chat history and performs related operations.
@@ -63,7 +64,7 @@ const appendMessage = async function (senderId: string | ObjectId,
     })
 }
 
-const queryMessage = async function (href: string | URL, userid: string | ObjectId,
+const queryUserMessage = async function (href: string | URL, userid: string | ObjectId,
     targetuserid: string | ObjectId,
     limit: number = 10,
     offset: number = 1,) {
@@ -108,5 +109,58 @@ const queryMessage = async function (href: string | URL, userid: string | Object
     })
 }
 
+export async function queryUnreadChats(userId: string) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const user = await User.findById(userId).lean().exec();
+            const res: any = {};
+            if (user) {
+                if (user.unreadChats) {
+                    for (const [otherUserId, messageIds] of Object.entries(user.unreadChats)) {
+                        const userInfo = await queryUser(otherUserId, 'name _id avatar');
+                        const messages = await queryMessage(messageIds as string[], 'content time sender receiver');
+                        res[otherUserId] = {
+                            userInfo, messages
+                        }
+                    }
+                }
+                resolve(res);
+            }
+        } catch (error) {
 
-export { appendMessage, queryMessage }
+        }
+    })
+}
+
+export async function queryMessage(messageId: string, field: string): Promise<IMessage>;
+export async function queryMessage(messageId: string[], field: string): Promise<IMessage[]>;
+export async function queryMessage(messageId: string | string[], field: string): Promise<IMessage | IMessage[]> {
+    if (typeof messageId === 'string') {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const res = await Message.findById(messageId).lean().select(field).exec();
+                res ? resolve(res) : undefined;
+            } catch (error) {
+                reject(error);
+            }
+        });
+    } else if (Array.isArray(messageId)) {
+        return Promise.all(
+            messageId.map((id) =>
+                new Promise(async (resolve, reject) => {
+                    try {
+                        const res = await Message.findById(id).lean().select(field).exec();
+                        res ? resolve(res) : undefined;
+                    } catch (error) {
+                        reject(error);
+                    }
+                })
+            )
+        ) as any;
+    } else {
+        return Promise.resolve([]);
+    }
+}
+
+
+export { appendMessage, queryUserMessage }
