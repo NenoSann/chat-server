@@ -329,4 +329,17 @@ export async function toggleUserOnline(userId: string | ObjectId, state: boolean
     })
 }
 
+export async function queryUser(userId: string | ObjectId, field: string) {
+    return new Promise<IUser>(async (resolve, reject) => {
+        try {
+            const res = await User.findById(userId).select(field).lean().exec();
+            if (res !== null) {
+                resolve(res as unknown as IUser);
+            }
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export { registerUser, getUser, addFriends, deleteFriends, queryFriends, joinGroup, quitGroup }
