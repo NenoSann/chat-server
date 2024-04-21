@@ -22,7 +22,7 @@ interface ServerToClientEvents {
             userid: string
         }
     }) => void;
-    private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, receivername: string, receiveravatar: string, sendername: string, senderavatar: string }) => void,
+    private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, receivername: string, receiveravatar: string, sendername: string, senderavatar: string,ObjectId:string }) => void,
     user_disconnect: (key: string) => void;
 
     // group events:
@@ -68,7 +68,8 @@ const createSocket = function (HttpServer: HttpServer): Server {
         SocketData>(HttpServer, {
             cors: {
                 origin: '*',
-            }
+            },
+            maxHttpBufferSize: 1e8
         });
     //use middle ware
     io.use((socket, next) => {
@@ -102,17 +103,23 @@ const createSocket = function (HttpServer: HttpServer): Server {
         })
         // set connected user's online state to true
         toggleUserOnline(userInfo.userid, true);
-
         // handle the private message and redirect it to right recipient
         Socket.on('private_message', async (data, callback: Function) => {
             const { content, to, senderid, senderavatar, sendername, receiverid, receiveravatar, receivername } = data;
+	    console.log('got private message: ',{to,senderid,sendername,receiverid,receivername});
+            let ObjectId: string = '';
             try {
                 // not using await cause overload is massive
-                await appendMessage(senderid, receiverid, content);
-                callback();
+                ObjectId = await appendMessage(senderid, receiverid, content);
+                console.log('message ObjectId:', ObjectId);
+                callback(ObjectId);
             } catch (error) {
                 console.log(error);
             }
+            Object.defineProperty(content, 'ObjectId', {
+                value: ObjectId,
+                writable: true
+            });
             Socket.to(to).emit('private_message', {
                 content,
                 from: Socket.id,
@@ -121,7 +128,8 @@ const createSocket = function (HttpServer: HttpServer): Server {
                 senderavatar,
                 receiverid,
                 receiveravatar,
-                receivername
+                receivername,
+		ObjectId
             })
         })
 
@@ -150,6 +158,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
             const userid = Socket.handshake.auth['_id'] as string;
             userMap.delete(userid)
             Socket.broadcast.emit('user_disconnect', userid);
+            toggleUserOnline(userid, false);
         })
     });
     return io;

@@ -18,8 +18,7 @@ const appendMessage = async function (senderId: string | ObjectId,
     content: MessageContent,
     image?: string[]
 ) {
-    console.log(senderId, receiverId, content);
-    return new Promise<Boolean>(async (resolve, reject) => {
+    return new Promise<string>(async (resolve, reject) => {
         try {
             const sender = await User.findById(senderId);
             const receiver = await User.findById(receiverId);
@@ -32,6 +31,7 @@ const appendMessage = async function (senderId: string | ObjectId,
                     image
                 });
                 await newMessage.save();
+                const objectId = newMessage._id.toString();
                 // check if has chat before
                 if (!sender.chats.has(receiverId as string)) {
                     sender.chats.set(receiverId as string, []);
@@ -55,7 +55,7 @@ const appendMessage = async function (senderId: string | ObjectId,
                 }
                 await receiver.save();
                 await sender.save();
-                resolve(true);
+                resolve(objectId);
             }
         } catch (error) {
             console.log(error);
