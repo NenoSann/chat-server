@@ -4,9 +4,18 @@ import { registerUser, getUser, addFriends, deleteFriends, quitGroup, joinGroup,
 import { createGroup } from './API/group';
 import { BaseResponse } from './API/interface/response';
 import { queryUnreadChats } from './API/message';
+import { ImageBucket, TempCredentialGenerator } from './API/ImageBucket';
+import 'dotenv/config';
 let base = "localhost:8081";
 const router = express.Router();
-
+let imageBucket: ImageBucket;
+let tempCredentialGenerator: TempCredentialGenerator;
+if (process.env['SecretKey'] && process.env['SecretId']) {
+    imageBucket = new ImageBucket(process.env['SecretKey'], process.env['SecretId']);
+    tempCredentialGenerator = new TempCredentialGenerator(process.env['SecretKey'], process.env['SecretId']);
+} else {
+    throw new Error('secretKey and secretId for cos not defined');
+}
 router.get('/', (_req, res) => {
     res.send('connect to express server');
 })
@@ -175,6 +184,24 @@ router.post('/quitGroup', async (req: Request, res: Response) => {
         })
     }
 
+})
+
+router.post('/getTempSTS', async (req: Request, res: Response) => {
+    try {
+        const credential = await tempCredentialGenerator.getCredential();
+        res.status(200).send(credential);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+})
+
+router.get('/getCosPath', async (req: Request, res: Response) => {
+    try {
+        const CosPath = imageBucket.getCosPath();
+        res.status(200).send(CosPath);
+    } catch (error) {
+        res.status(500).send(error);
+    }
 })
 
 export { router };

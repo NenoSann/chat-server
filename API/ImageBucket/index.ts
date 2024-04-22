@@ -9,14 +9,14 @@ export class ImageBucket {
     private secretId: string;
     private secretKey: string;
     private cos: COS;
-    private sts: tempCredentialGenerator;
+    private sts: TempCredentialGenerator;
     constructor(SecretKey: string, SecretId: string) {
         this.secretId = SecretId;
         this.secretKey = SecretKey;
         this.cos = new COS({
             SecretKey, SecretId
         });
-        this.sts = new tempCredentialGenerator(SecretKey, SecretKey);
+        this.sts = new TempCredentialGenerator(SecretKey, SecretKey);
     };
     public async uploadFile(data: Buffer | string, key: string) {
         try {
@@ -32,9 +32,12 @@ export class ImageBucket {
             throw new Error('fail at uploadFile');
         }
     }
+    public getCosPath() {
+        return ImageBucket.Config;
+    }
 }
 
-export class tempCredentialGenerator {
+export class TempCredentialGenerator {
     private config: {
         secretId: string,
         secretKey: string,
@@ -63,6 +66,7 @@ export class tempCredentialGenerator {
                 // 开通媒体处理服务
                 // 更多数据万象授权可参考：https://cloud.tencent.com/document/product/460/41741
             ],
+            'resource': [],
             'effect': 'allow',
             'principal': { 'qcs': ['*'] },
         }],
@@ -82,11 +86,17 @@ export class tempCredentialGenerator {
         try {
             const credential = STS.getCredential({
                 ...this.config,
-                policy: tempCredentialGenerator.policy
+                policy: TempCredentialGenerator.policy
             })
             return credential;
         } catch {
             throw new Error('fail at get temp credential.');
+        }
+    }
+    public getCosPath() {
+        return {
+            Bucket: this.config.bucket,
+            Region: this.config.region
         }
     }
 }
