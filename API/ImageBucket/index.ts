@@ -1,10 +1,11 @@
 import COS from "cos-nodejs-sdk-v5"
 import STS from 'qcloud-cos-sts'
 export class ImageBucket {
-    private static Config = {
+    public static Config = {
         baseKey: '/chat/image/',
         Bucket: 'imagebucket-1322308688',
-        Region: 'ap-tokyo'
+        Region: 'ap-tokyo',
+        APPID: '1322308688'
     }
     private secretId: string;
     private secretKey: string;
@@ -55,18 +56,20 @@ export class TempCredentialGenerator {
                 'name/cos:PutObject',
                 'name/cos:PostObject',
                 // 分片上传
-                'name/cos:InitiateMultipartUpload',
-                'name/cos:ListMultipartUploads',
-                'name/cos:ListParts',
-                'name/cos:UploadPart',
-                'name/cos:CompleteMultipartUpload',
+                "name/cos:InitiateMultipartUpload",
+                "name/cos:ListMultipartUploads",
+                "name/cos:ListParts",
+                "name/cos:UploadPart",
+                "name/cos:CompleteMultipartUpload",
+                "name/cos:AbortMultipartUpload"
                 // 简单上传和分片，需要以上权限，其他权限列表请看 https://cloud.tencent.com/document/product/436/31923
 
                 // 文本审核任务
                 // 开通媒体处理服务
                 // 更多数据万象授权可参考：https://cloud.tencent.com/document/product/460/41741
             ],
-            'resource': [],
+            // 类似： "qcs::cos:ap-beijing:uid/1250000000:examplebucket-1250000000/doc/*"
+            'resource': [`qcs::cos:${ImageBucket.Config.Region}:uid/${ImageBucket.Config.APPID}:${ImageBucket.Config.Bucket}${ImageBucket.Config.baseKey}*`],
             'effect': 'allow',
             'principal': { 'qcs': ['*'] },
         }],
@@ -78,7 +81,7 @@ export class TempCredentialGenerator {
             durationSeconds: 1800,
             bucket: 'imagebucket-1322308688',
             region: 'ap-tokyo',
-            allowPrefix: '/chat/image/*',
+            allowPrefix: '*',
             proxy: ''
         }
     }
