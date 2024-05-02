@@ -22,7 +22,7 @@ interface ServerToClientEvents {
             userid: string
         }
     }) => void;
-    private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, receivername: string, receiveravatar: string, sendername: string, senderavatar: string,ObjectId:string }) => void,
+    private_message: (d: { content: MessageContent, from: string, senderid: string, receiverid: string, receivername: string, receiveravatar: string, sendername: string, senderavatar: string, ObjectId: string }) => void,
     user_disconnect: (key: string) => void;
 
     // group events:
@@ -106,7 +106,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
         // handle the private message and redirect it to right recipient
         Socket.on('private_message', async (data, callback: Function) => {
             const { content, to, senderid, senderavatar, sendername, receiverid, receiveravatar, receivername } = data;
-	    console.log('got private message: ',{to,senderid,sendername,receiverid,receivername});
+            console.log('got private message: ', { to, senderid, sendername, receiverid, receivername });
             let ObjectId: string = '';
             try {
                 // not using await cause overload is massive
@@ -129,7 +129,7 @@ const createSocket = function (HttpServer: HttpServer): Server {
                 receiverid,
                 receiveravatar,
                 receivername,
-		ObjectId
+                ObjectId
             })
         })
 

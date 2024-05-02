@@ -7,7 +7,7 @@ interface IUser {
     name: string,
     password: string,
     email: string,
-    _id: Schema.Types.ObjectId | ObjectId | string,
+    _id?: Schema.Types.ObjectId | ObjectId | string,
     avatar?: string,
     groups: Schema.Types.ObjectId[],
     friends: Schema.Types.ObjectId[],

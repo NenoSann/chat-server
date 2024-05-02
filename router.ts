@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { registerUser, getUser, addFriends, deleteFriends, quitGroup, joinGroup, queryFriends } from './API/user';
 import { createGroup } from './API/group';
 import { BaseResponse } from './API/interface/response';
-import { queryUnreadChats } from './API/message';
+import { queryUnreadChatList } from './API/message';
 import { ImageBucket, TempCredentialGenerator } from './API/ImageBucket';
 import 'dotenv/config';
 let base = "localhost:8081";
@@ -138,11 +138,11 @@ router.get('/friends', async (req: Request, res: Response) => {
     }
 })
 
-router.get('/queryUnreadChats', async (req: Request, res: Response) => {
+router.get('/queryUnreadChatList', async (req: Request, res: Response) => {
     try {
         const { userId } = req.query;
         if (userId) {
-            const result = await queryUnreadChats(userId as string);
+            const result = await queryUnreadChatList(userId as string);
             res.status(200).send(result);
         }
     } catch {
