@@ -115,7 +115,6 @@ export async function queryUnreadChats(userId: string, targetUserId: string) {
             const user = await User.findById(userId).lean().exec();
             const res: any = {
                 content: [],
-                userInfo: {}
             };
             if (user) {
                 if (Object.keys(user.unreadChats).length !== 0) {
