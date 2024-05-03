@@ -115,6 +115,7 @@ export async function queryUnreadChats(userId: string, targetUserId: string) {
             const user = await User.findById(userId).lean().exec();
             const res: any = {
                 content: [],
+                info: {}
             };
             if (user) {
                 if (Object.keys(user.unreadChats).length !== 0) {
@@ -166,7 +167,8 @@ export async function queryUnreadChatList(userId: string, targetUserId?: string)
                                 avatar: userInfo.avatar
                             },
                             content: messageContent.content,
-                            date: messageContent.time
+                            date: messageContent.time,
+                            total: messageIds.length
                         }
                         res.push(content);
                     }
