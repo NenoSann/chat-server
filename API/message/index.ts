@@ -118,12 +118,12 @@ export async function queryUnreadChats(userId: string, targetUserId: string) {
                 userInfo: {}
             };
             if (user) {
-                if (user.unreadChats) {
+                if (Object.keys(user.unreadChats).length !== 0) {
                     const messageIds = user.unreadChats[targetUserId];
                     const messages = [];
                     const userInfo = await queryUser(targetUserId, '_id name avatar');
                     for (const id of messageIds) {
-                        const content = await queryMessage(id as string, 'content time sender receiver')
+                        const content = await queryMessage(id.toString() as string, 'content time sender receiver')
                         messages.push({
                             content: content.content,
                             date: content.time,
@@ -154,10 +154,10 @@ export async function queryUnreadChatList(userId: string, targetUserId?: string)
             const user = await User.findById(userId).lean().exec();
             const res: any = [];
             if (user) {
-                if (user.unreadChats) {
+                if (Object.keys(user.unreadChats).length !== 0) {
                     for (const [otherUserId, messageIds] of Object.entries(user.unreadChats)) {
                         const userInfo = await queryUser(otherUserId, 'name _id avatar');
-                        const messageContent = await queryMessage(messageIds[0] as string, 'content time sender receiver');
+                        const messageContent = await queryMessage(messageIds[0].toString(), 'content time sender receiver');
 
                         const content = {
                             type: 'private',
