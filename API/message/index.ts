@@ -180,7 +180,7 @@ export async function queryUnreadChatsLimit(userId: string, targetUserId: string
                                 type: 'from',
                                 sendBy: sender as string,
                                 sendTo: receiver as string,
-                                text: content as string,
+                                text: content.text as string,
                                 image: image as string[],
                                 date: time as number
                             }
