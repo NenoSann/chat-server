@@ -1,7 +1,7 @@
 import { ObjectId } from "mongoose";
 import { Message, IMessage } from "../../mongodb/message";
 import { User } from "../../mongodb/user";
-import { ItemsResponse } from "../interface/response";
+import { ItemsResponse, MessagesResponse } from "../interface/response";
 import { MessageContent } from "../interface/socket";
 import { queryUser } from "../user";
 
@@ -144,6 +144,56 @@ export async function queryUnreadChats(userId: string, targetUserId: string) {
         } catch (error) {
             console.error(error);
             reject();
+        }
+    })
+}
+
+export async function queryUnreadChatsLimit(userId: string, targetUserId: string, offset: number, limit: number) {
+    return new Promise<MessagesResponse>(async (resolve, reject) => {
+        try {
+            if (userId !== undefined && targetUserId !== undefined) {
+                const user = await User.findById(userId).lean().exec();
+                const targetUser = await User.findById(targetUserId).lean().exec();
+                if (user && targetUser) {
+                    const res: MessagesResponse = {
+                        data: [],
+                        info: {
+                            id: targetUser?._id.toString(),
+                            name: targetUser?.name,
+                            avatar: targetUser?.avatar as string
+                        },
+                        offset,
+                        limit,
+                        total: 0,
+                        status: 'success',
+                    }
+                    // if user don't have unreadChats
+                    const unreadChats = user.unreadChats[targetUserId]?.map((id) => id.toString());
+                    if (unreadChats === undefined || unreadChats.length === 0) {
+                        resolve(res);
+                    } else {
+                        const messages = await queryMessage(unreadChats.slice(limit * offset, limit * (offset + 1)), 'sender receiver time content image');
+                        const transformedMessages = messages.map((msg) => {
+                            const { sender, receiver, content, image, time } = msg;
+                            return {
+                                // doing weird type assertion
+                                type: 'from',
+                                sendBy: sender as string,
+                                sendTo: receiver as string,
+                                text: content as string,
+                                image: image as string[],
+                                date: time as number
+                            }
+                        })
+                        res.data.push(...transformedMessages);
+                        res.total = res.data.length;
+                        resolve(res);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
     })
 }

@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { registerUser, getUser, addFriends, deleteFriends, quitGroup, joinGroup, queryFriends } from './API/user';
 import { createGroup } from './API/group';
 import { BaseResponse } from './API/interface/response';
-import { queryUnreadChatList, queryUnreadChats } from './API/message';
+import { queryUnreadChatList, queryUnreadChats, queryUnreadChatsLimit } from './API/message';
 import { ImageBucket, TempCredentialGenerator } from './API/ImageBucket';
 import 'dotenv/config';
 let base = "localhost:8081";
@@ -152,15 +152,27 @@ router.get('/queryUnreadChatList', async (req: Request, res: Response) => {
 
 router.get('/queryUnreadChats', async (req: Request, res: Response) => {
     try {
-        const { userId, targetUserId } = req.query;
+        const { userId, targetUserId, offset, limit } = req.query;
         if (userId && targetUserId) {
-            const result = await queryUnreadChats(userId as string, targetUserId as string);
-            res.status(200).json(result);
+            if (offset && limit) {
+                const result = await queryUnreadChatsLimit(
+                    userId as string,
+                    targetUserId as string,
+                    Number.parseInt(offset as string),
+                    Number.parseInt(limit as string));
+                res.status(200).json(result);
+            } else {
+                const result = await queryUnreadChats(userId as string, targetUserId as string);
+                res.status(200).json(result);
+            }
+        } else {
+            throw new Error('invalid params');
         }
     } catch (error) {
-        res.status(500).end();
+        res.status(500).json(error).end();
     }
 })
+
 
 router.post('/joinGroup', async (req: Request, res: Response) => {
     try {
