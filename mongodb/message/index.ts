@@ -1,12 +1,12 @@
 import mongoose, { Schema } from "mongoose"
 
 interface IMessage {
-    _id: Schema.Types.ObjectId,
-    sender: Schema.Types.ObjectId,
-    receiver: Schema.Types.ObjectId,
+    _id: Schema.Types.ObjectId | string,
+    sender: Schema.Types.ObjectId | string,
+    receiver: Schema.Types.ObjectId | string,
     content: any,
-    time: Schema.Types.Date,
-    image: Schema.Types.String
+    time: Schema.Types.Date | number | Date,
+    image: Schema.Types.String | string | string[]
 }
 const messageSchema: Schema<IMessage> = new Schema<IMessage>({
     sender: {

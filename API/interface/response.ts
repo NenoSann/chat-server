@@ -34,6 +34,17 @@ interface FriendsResponse extends BaseResponse {
     total: number,
 }
 
+export interface MessagesResponse extends ResponseWithOffset {
+    data: {
+        type: 'from' | 'to' | string
+        sendBy: string | ObjectId,
+        sendTo: string | ObjectId,
+        text: string,
+        image?: string[],
+        date: number | string
+    }[]
+}
+
 interface ItemsResponse<ObjectType> extends ResponseWithOffset {
     items: ObjectType[]
 }
