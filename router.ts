@@ -6,13 +6,13 @@ import { BaseResponse } from './API/interface/response';
 import { queryUnreadChatList, queryUnreadChats, queryUnreadChatsLimit } from './API/message';
 import { ImageBucket, TempCredentialGenerator } from './API/ImageBucket';
 import 'dotenv/config';
-let base = "localhost:8081";
+let base = "43.263.233.68:8081";
 const router = express.Router();
 let imageBucket: ImageBucket;
 let tempCredentialGenerator: TempCredentialGenerator;
-if (process.env['SecretKey'] && process.env['SecretId']) {
-    imageBucket = new ImageBucket(process.env['SecretKey'], process.env['SecretId']);
-    tempCredentialGenerator = new TempCredentialGenerator(process.env['SecretKey'], process.env['SecretId']);
+if (process.env['SecretKeyPicnia'] && process.env['SecretIdPicnia']) {
+    imageBucket = new ImageBucket(process.env['SecretKeyPicnia'], process.env['SecretIdPicnia']);
+    tempCredentialGenerator = new TempCredentialGenerator(process.env['SecretKeyPicnia'], process.env['SecretIdPicnia']);
 } else {
     throw new Error('secretKey and secretId for cos not defined');
 }

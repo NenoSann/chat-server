@@ -186,6 +186,7 @@ export async function queryUnreadChatsLimit(userId: string, targetUserId: string
                             }
                         })
                         res.data.push(...transformedMessages);
+                        res.data.reverse();
                         res.total = res.data.length;
                         resolve(res);
                     }
